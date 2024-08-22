@@ -1,41 +1,30 @@
-var createError = require('http-errors');
-var express = require('express');
-const admin = require("firebase-admin");
+const express = require('express');
+const admin = require('firebase-admin');
+const path = require('path');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
-var cors =require('cors');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-
-var app = express();
-const serviceAccount = require("./config/serviceAccountKey.json");
+const serviceAccount = require('./config/serviceAccountKey.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+  projectId: 'rsapmna-de966',
 });
 
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+const app = express();
 
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(cors({
-  origin:'*'
-}))
-
-
-
+app.use(cors({ origin: '*' }));
 
 app.post("/send-notification", async (req, res) => {
   const registrationToken = req.body.token;
   const message = {
-    token: registrationToken,  // Add the token here
+    token: registrationToken,
     notification: {
       title: req.body.title,
       body: req.body.body,
@@ -43,7 +32,7 @@ app.post("/send-notification", async (req, res) => {
   };
 
   try {
-    const response = await admin.messaging().send(message); // Only pass the message object
+    const response = await admin.messaging().send(message);
     res.status(200).send("Notification sent successfully");
   } catch (error) {
     console.error("Error sending notification:", error);
@@ -51,22 +40,16 @@ app.post("/send-notification", async (req, res) => {
   }
 });
 
+app.use('/', require('./routes/index'));
+app.use('/users', require('./routes/users'));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   next(createError(404));
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
+app.use((err, req, res, next) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
   res.status(err.status || 500);
   res.render('error');
 });
