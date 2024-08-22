@@ -5,7 +5,14 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const serviceAccount = require('./config/serviceAccountKey.json');
+// const serviceAccount = require('./config/serviceAccountKey.json');
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   projectId: 'rsapmna-de966',
+// });
+
+const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
