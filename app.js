@@ -5,12 +5,26 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
-const serviceAccount = require('./config/serviceAccountKey.json');
+require('dotenv').config();
+// const serviceAccount = require('./config/serviceAccountKey.json');
+
+// admin.initializeApp({
+//   credential: admin.credential.cert(serviceAccount),
+//   projectId: 'rsapmna-de966',
+// });
+
+if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  throw new Error('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set');
+}
+
+const serviceAccount = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+console.log('this is service account',serviceAccount)
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   projectId: 'rsapmna-de966',
 });
+
 
 const app = express();
 
